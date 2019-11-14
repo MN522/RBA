@@ -1,0 +1,7 @@
+Data File: D:\OneDrive - é‹Ê‘åŠw\‘²Œ¤\c++\RBArchDesign\Data\data_wave.txt
+Binding: Tstart=100.000000, Tend=1.000000, Trate=0.950000, Iterate=1
+Pro Floorplan: Tstart=10.000000, Tend=0.100000, Trate=0.950000, Iterate=1
+Final Floorplan: Tstart=10.000000, Tend=0.100000, Trate=0.990000, Iterate=1
+Clock Cycles = 34
+Clock Pediod = 36
+CPU time = 0 seconds

@@ -1,0 +1,7 @@
+Data File: D:\OneDrive - é‹Ê‘åŠw\‘²Œ¤\ƒ[ƒ~\‘²˜_\—á‘èDFG.txt
+Binding: Tstart=100.000000, Tend=1.000000, Trate=0.950000, Iterate=1
+Pro Floorplan: Tstart=10.000000, Tend=0.100000, Trate=0.950000, Iterate=1
+Final Floorplan: Tstart=10.000000, Tend=0.100000, Trate=0.990000, Iterate=1
+Clock Cycles = 0
+Clock Pediod = 0
+CPU time = 0 seconds

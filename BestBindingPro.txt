@@ -1,0 +1,8 @@
+1 Add1
+2 Add0
+3 Add1
+4 Add1
+5 Add0
+6 Add1
+7 Add0
+8 Add0

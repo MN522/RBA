@@ -1,0 +1,12 @@
+2019/11/7
+エラー：void CRBArchDesignDlg::Execute(void)内のUpdateData(TRUE)で「～wincpp　line970」が発生
+原因　：スレッド１でダイアログを管理。スレッド２でSAを実行。UpdateData(TRUE)をスレッド２で実行したためスレッドをま		たがったことによるエラー
+改善　：UpdateData(TRUE)と
+	time(&m_timeStart);
+	struct tm strtim;
+	localtime_s(&strtim, &m_timeStart);
+	m_strTimeStart.Format(_T("%d/%d %d:%02d:%02d"), strtim.tm_mon + 1, strtim.tm_mday, strtim.tm_hour, 	strtim.tm_min, strtim.tm_sec);
+	UpdateData(FALSE);
+	をスレッド1内のvoid CRBArchDesignDlg::OnBnClickedButtonExecute()に移動
+結果　：エラー解消
+補足　：”改善”に記述したコードはSAが立ち上がった時の時刻をダイアログに表示するもの。スレッド２で実行することで正確な時刻を反映したかった。スレッド１に移動したことによってダイアログ立ち上がりの時刻が反映される。ただし誤差の範囲

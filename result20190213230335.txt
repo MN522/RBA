@@ -1,0 +1,7 @@
+Data File: D:\OneDrive - é‹Ê‘åŠw\‘²Œ¤\c++\RBArchDesign\Data\—á‘èDFG.txt
+Binding: Tstart=100.000000, Tend=1.000000, Trate=0.950000, Iterate=10
+Pro Floorplan: Tstart=10.000000, Tend=0.100000, Trate=0.950000, Iterate=10
+Final Floorplan: Tstart=10.000000, Tend=0.100000, Trate=0.990000, Iterate=10
+Clock Cycles = 4
+Clock Pediod = 15
+CPU time = 2 seconds

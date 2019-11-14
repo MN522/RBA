@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="CMultiSimulatedAnnealing">
+    <Position X="3" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAECAACAAAQQACSAgMEQAQAAAAAAAAFIAAEEACAA=</HashCode>
+      <FileName>MultiSimulatedAnnealing.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CMultiSolution">
+    <Position X="8.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAYAAAAABQAAAQAAAAAABECAEAgAAAAAAAAAgAAAAAA=</HashCode>
+      <FileName>MultiSolution.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CSAstatistics">
+    <Position X="10" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAgAIAAAAAAAAAAAAQAEAQQBAIQABAAIAAAAAgAg=</HashCode>
+      <FileName>SAstatistics.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CSimulatedAnnealing">
+    <Position X="4.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAADAACAAIQSAAQAgEEQAQAAAAAAAABIAAACACAA=</HashCode>
+      <FileName>SimulatedAnnealing.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CSolution">
+    <Position X="6.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAgABAAAAQAAAAAABEAAAAACAAAAAAAAgAAAAAE=</HashCode>
+      <FileName>Solution.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="MyThreadToken">
+    <Position X="0.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAgAAAAABAAAAAAAAAAAACAAAAEAAAAAAAAQAAAA=</HashCode>
+      <FileName>MultiSolution.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Typedef Name="THREAD_TOKEN" Collapsed="true">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>MultiSolution.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Font Name="Yu Gothic UI" Size="9" />
+</ClassDiagram>
