@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Binding.h"
-
+#include <deque> 
+#include <vector> 
 #define DEBUG_VERBOSE_FUNCTION
 
 #define MODULE_SIZE_ADD_WIDTH 16
@@ -12,7 +13,7 @@
 #define MODULE_SIZE_REG_WIDTH 16
 #define MODULE_SIZE_REG_HEIGHT 2
 
-//#define THRESHOLD_CLOCK_PERIOD 6
+//#define THRESHOLD_CLOCK_PERIOD 4
 #define THRESHOLD_CLOCK_PERIOD 17
 CBinding::CBinding()
 {
@@ -277,6 +278,8 @@ double CBinding::Evaluate(void)
 //#define DEBUG_VERBOSE_SCORE
 int CBinding::GetScore()
 {
+	//簡単化のためバインディングを任意に固定
+		//m_aBinding[0] = 0; m_aBinding[1] = 1; m_aBinding[2] = 2; m_aBinding[3] = 0; m_aBinding[4] = 1; m_aBinding[5] = 2; m_aBinding[6] = 0; m_aBinding[7] = 1;
 #ifdef DEBUG_VERBOSE_SCORE
 	TRACE( "CBinding::GetScore --------------------\n" );
 #endif
@@ -323,12 +326,19 @@ int CBinding::GetScore()
 	GetScorePhase4();
 
 	///////////////////////////////////////////////////////////////////////////////////
+	// (4_1)MUXの追加
+	// 実行クロックサイクル数の再決定
+#ifdef DEBUG_VERBOSE_SCORE
+	TRACE("CBinding::GetScorePhase4_1 ---\n");
+#endif
+	
+	///////////////////////////////////////////////////////////////////////////////////
 	// (5)レジスタアロケーション結果に基づきモジュールを本フロアプランに登録
 #ifdef DEBUG_VERBOSE_SCORE
 	TRACE( "CBinding::GetScorePhase5 ---\n" );
 #endif
 	GetScorePhase5();
-
+	//GetScorePhase4_1();
 	///////////////////////////////////////////////////////////////////////////////////
 	// (6)本フロアプラン最適化
 	// クロック周期が決定
@@ -516,6 +526,183 @@ void CBinding::GetScorePhase4(void)
 	ListScheduleWithComminicationDelay();
 	AddRegistersFinal();
 }
+//(4_1)MUXの追加、実行クロックサイクル数の再決定
+void CBinding::GetScorePhase4_1(void)
+{
+	//各Moduleに入力されるレジスタ数を調べる
+	AnalyzeInterModuleCommunicationRequirementsFinal();
+	COMREQUIREMENT *crptr;
+	int nModuleS = m_nCountAllocatedRegInstance + m_nProCountModuleAdd + m_nProCountModuleSub + m_nProCountModuleMul;
+	m_listCommunicationRequirementMux = m_listCommunicationRequirementFinal;
+	InModule *nCountInModule = (InModule *)GlobalAlloc(GPTR, nModuleS * sizeof(InModule));
+	//int *aCountArrowToModuleDest = (int *)GlobalAlloc(GPTR, nCountModule * sizeof(int));
+	//MUX *crptrMux= (MUX *)GlobalAlloc(GPTR, nCountModule * sizeof(MUX));
+	for (crptr = m_listCommunicationRequirementMux; crptr; crptr = crptr->next) {
+		if (crptr->nIndexModuleVia >= 0) {// RegToFuの場合
+			//演算器ー＞レジスタ
+			/*nCountInModule[crptr->nIndexModuleDest].DestModuleName = crptr->nIndexModuleDest;
+			nCountInModule[crptr->nIndexModuleDest].nCountModule++;
+			nCountInModule[crptr->nIndexModuleDest].aInModule.push_back(crptr->nIndexModuleVia);*/
+			//レジスタ－＞演算器
+			nCountInModule[crptr->nIndexModuleVia].DestModuleName = crptr->nIndexModuleVia;
+			nCountInModule[crptr->nIndexModuleVia].nCountModule++;
+			nCountInModule[crptr->nIndexModuleVia].aInModule.push_back(crptr->nIndexModuleSource);
+		}
+		else {//RegToRegの場合
+			nCountInModule[crptr->nIndexModuleDest].DestModuleName = crptr->nIndexModuleDest;
+			nCountInModule[crptr->nIndexModuleDest].nCountModule++;
+			nCountInModule[crptr->nIndexModuleDest].aInModule.push_back(crptr->nIndexModuleSource);
+		}
+	}
+
+	/*for (crptr = m_listCommunicationRequirementMux; crptr; crptr = crptr->next) {
+
+
+		crptrMux->nIn1Module = crptr->nIndexModuleSource;
+		crptrMux->nOutModule = crptr->nIndexModuleDest;
+		crptrMux->next = crptr->next;
+		crptr->nextmux = crptrMux;*/
+	for (int i = 0; i < 4; i++) {
+		nCountInModule[0].aInModule.push_back(i);
+	}
+
+
+
+	/*for (int i = 0; i< nModuleS;i++){
+		NewtreeDestMux->nIn1Module = -1;		//入力するModule番号(レジスタor演算器)
+		NewtreeDestMux->nIn2Module = -1;		//-1のときはつながっていない
+		NewtreeDestMux->nOutModule = -1;
+		for (int k = 0; k <mcrptr->aInModule.size(); k++) {
+
+			if (NewtreeDestMux->nIn1Module == -1) {
+				NewtreeDestMux->nOutModule = mcrptr->DestModuleName;
+				NewtreeDestMux->nIn1Module = mcrptr->aInModule[k];
+			}
+
+			else if(NewtreeDestMux->nIn2Module == -1){
+				NewtreeDestMux->nIn2Module = mcrptr->aInModule[k];
+			}
+
+			else if((k%2)-1){//奇数番目のSouceなら
+				lastMux = (MuxNode *)GlobalAlloc(GPTR, sizeof(MuxNode));
+				lastMux->nOutModule = NewtreeDestMux->nOutModule;
+				lastMux->In1Mux = NewtreeDestMux;
+				lastMux->nIn1Module = mcrptr->aInModule[k];
+				NewtreeDestMux->nOutModule=-1;
+				NewtreeDestMux->outMux= lastMux;
+			}
+			else {
+				newMux = (MuxNode *)GlobalAlloc(GPTR, sizeof(MuxNode));
+				//newMux->nIn1Module = lastMux->nIn1Module;
+				//newMux->nIn2Module = mcrptr->aInModule[k];
+				//newMux->outMux = lastMux;
+				//lastMux->In2Mux = newMux;
+			}
+
+
+		}
+		mcrptr ++;
+
+		NewtreeDestMux->TreenextMux = treeDestMux;
+	}*/
+
+	MuxNode *root = (MuxNode *)GlobalAlloc(GPTR, sizeof(MuxNode));
+
+	makeMuxTree(root, nCountInModule[0].aInModule);
+	
+	
+
+
+}
+	
+
+void  CBinding::makeMuxTree(MuxNode *ptr1, std::vector<int> aIn)
+{
+	
+	MuxNode *ptr2 = (MuxNode *)GlobalAlloc(GPTR, sizeof(MuxNode));
+
+	std::deque<MuxNode*> qme;
+	std::deque<MuxNode*> qchild;
+	
+	int id = 0;
+
+	int stage_num= ceil((log(aIn.size()) / log(2.0))-1);
+
+
+	qme.push_back(ptr1);
+	for (int i = 0; i < stage_num; i++) {
+		
+		while (!qme.empty()) {
+			 ptr2 = qme.front();     // 先頭データを取り出しておく
+			 qme.pop_front();
+
+			 MuxNode *ptr5 = new MuxNode;
+			 MuxNode *ptr6 = new MuxNode;
+			id++;
+			ptr5->id = id;
+			id++;
+			ptr6->id = id;
+			ptr5->outMux = ptr2;
+			ptr6->outMux = ptr2;
+			ptr2->In1Mux = ptr5;
+			ptr2->In2Mux = ptr6;
+		
+			qchild.push_back(ptr2->In1Mux);
+			qchild.push_back(ptr2->In2Mux);
+		}
+		qme = qchild;
+		qchild.clear();
+	}
+	//qme.clear();
+	//qme.shrink_to_fit();
+	qchild.shrink_to_fit();
+	
+	//Moduleをセットしていく
+	int i = 0;
+	int j = 0;
+	std::deque<MuxNode*> ptr_qme;
+	ptr_qme = qme;
+	//シードを上手く作る
+	while (!aIn.empty()) {
+		
+		if (j == qme.size()) {//
+			j = 0;
+		}
+		ptr2 = qme[j];     // 順次データを取り出しておく
+		if (ptr2->nIn1Module == -1) {
+			ptr2->nIn1Module = aIn.front();//モジュールをMUXツリーの最下に追加していく
+			aIn.erase(aIn.begin());
+		}
+		else {
+			ptr2->nIn2Module = aIn.front();//モジュールをMUXツリーの最下に追加していく
+			aIn.erase(aIn.begin());
+		}
+		i++;
+		j++;
+	}
+
+	/*while (!ptr_qme.empty()) {
+		ptr2 = ptr_qme.front();
+		ptr_qme.pop_front();
+		if (ptr2->nIn2Module == -1) {
+		
+			ptr2->outMux->nIn1Module = ptr2->nIn1Module;
+			//ptr2->outMux->In1Mux = NULL;
+			delete ptr2;
+
+			
+		}
+	}*/
+
+}
+
+	
+
+	
+
+
+
+
 
 // (5)レジスタアロケーション結果に基づきモジュールを本フロアプランに登録
 void CBinding::GetScorePhase5(void)
@@ -560,6 +747,10 @@ void CBinding::GetScorePhase5(void)
 	// 現在のバインディングに基づいて本フロアプラン用にモジュール間通信要求を調べる
 	ClearCommunicationRequirementFinal();
 	AnalyzeInterModuleCommunicationRequirementsFinal();
+
+	
+
+
 	/////////////////////////////////
 	m_listCommunicationRequirement = m_listCommunicationRequirementFinal;
 	ShowCommunicationRequirement();
@@ -579,7 +770,7 @@ void CBinding::GetScorePhase5(void)
 // (6)本フロアプラン最適化 ==> クロック周期が決定
 void CBinding::GetScorePhase6(void)
 {
-	m_SAforFloorplanFinal.Initialize();
+	m_SAforFloorplanFinal.Initialize();//Initialize()へステップイン。そこで追加されたModueのガンマが決まる
 
 	int nResultCode = m_SAforFloorplanFinal.Execute();
 	if( nResultCode != 1 ){
@@ -687,7 +878,12 @@ int CBinding::Initialize()
 		m = (int)((rand()* nFUCount / (1.0+ RAND_MAX)));	// 0≦n1≦nNodeCount-1の乱数を求める
 		m_aBinding[n] = m;
 
+		 
+		
+
 	}
+	//簡単化のためバインディングを任意に固定
+	//m_aBinding[0] = 0; m_aBinding[1] = 1; m_aBinding[2] = 2; m_aBinding[3] = 0; m_aBinding[4] = 1; m_aBinding[5] = 2; m_aBinding[6] = 0; m_aBinding[7] = 1;
 
 	return 0;
 }
@@ -941,6 +1137,8 @@ void CBinding::ShowCommunicationRequirement(void)// 現在のバインディングに基づい
 	}
 }
 
+
+
 int CBinding::GetModuleIndexBoundToNode(int n)
 {
 	NODE *node = m_pDFG->m_node;
@@ -962,7 +1160,6 @@ int CBinding::GetModuleIndexBoundToNode(int n)
 		break;
 	}
 	return nIndexModuleBase+aTranslateBindingFUIndexToModuleIndex[m_aBinding[n]];
-	//int *m_aBinding; n番目ノードが割り当てられたFuの固有値とベースとなるnIndexModuleBaseを足す
 }
 
 #define FILENAME_PRO_BEST_BINDING "BestBindingPro.txt"
@@ -1861,14 +2058,14 @@ void CBinding::ListScheduleWithComminicationDelay(void)
 	}
 	GlobalFree( w );
 
-	/*///////////////////////////////
-	// 優先順位確認
+	///////////////////////////////
+	//優先順位確認
 	for( k=0 ; k<N ; k++ ){
 		n = m_aPriority[k];
 		TRACE( "Node %s, Priority=%d\n", node[n].N, node[n].nPriority );
 	}
 	TRACE( "-----------\n" );
-	///////////////////////////////*/
+	///////////////////////////////
 
 
 	//
@@ -1951,7 +2148,7 @@ void CBinding::ListScheduleWithComminicationDelay(void)
 	fclose(fp);
 	///////////////////////////////*/
 
-	/*///////////////////////////////
+	///////////////////////////////
 	// スケジュール確認
 	TRACE( "   :" );
 	for( nIndexModule=0 ; nIndexModule<nProCountFU ; nIndexModule++ ){

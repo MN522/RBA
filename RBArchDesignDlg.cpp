@@ -241,9 +241,9 @@ BOOL CRBArchDesignDlg::OnInitDialog()
 
 	m_bMultiThread = TRUE;
 
-	m_nAdd = 1;
-	m_nMul = 1;
-	m_nSub = 1;
+	m_nAdd = 3;
+	m_nMul = 0;
+	m_nSub = 0;
 
 	time( &m_timeStart );
 	struct tm strtim;
@@ -382,7 +382,7 @@ void CRBArchDesignDlg::OnBnClickedButtonExecute()
 void CRBArchDesignDlg::Execute(void)
 {
 	unsigned long nRandomSeed = (unsigned)time(NULL);
-	nRandomSeed = 0;
+	//nRandomSeed = 0;
 	srand(nRandomSeed);		/*—”‚Ì‰Šú‰»*/
 	FILE *fp;
 	fopen_s(&fp,"result.txt","w");

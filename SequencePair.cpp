@@ -134,7 +134,7 @@ int CSequencePair::Initialize()
 	return 1;
 }
 
-int CSequencePair::GetScore()
+int CSequencePair::GetScore()//Areaを求めるGetScoreは使われていない
 {
 	m_nScore = GetArea();
 	return m_nScore;
@@ -180,7 +180,7 @@ int CSequencePair::RestoreNeighbor()
 	return 1;
 }
 
-int CSequencePair::InitGamma()
+int CSequencePair::InitGamma()//Moduleの数だけシークエンスペアを生成
 {
 //	TRACE( "CSequencePair::InitGamma: m_nModule=%d\n", m_nModule );
 	if( m_GammaPlus != NULL ){
@@ -313,7 +313,7 @@ int CSequencePair::Pack()
 	////////////////////////////////////////////////*/
 	// 最長経路を求める
 	ComputeLongestPath();
-	for( kp=0 ; kp<m_nModule ; kp++ ) m_Module[kp].x = m_node[kp].nLength;
+	for( kp=0 ; kp<m_nModule ; kp++ ) m_Module[kp].x = m_node[kp].nLength;//Moduleのx座標をを求める
 
 	// 垂直方向パッキング
 	for( kp=0 ; kp<m_nModule ; kp++ ){
@@ -350,7 +350,7 @@ int CSequencePair::Pack()
 	//TRACE( "nCount=%d\n", nCount );
 	// 最長経路を求める
 	ComputeLongestPath();
-	for( kp=0 ; kp<m_nModule ; kp++ ) m_Module[kp].y = m_node[kp].nLength;
+	for( kp=0 ; kp<m_nModule ; kp++ ) m_Module[kp].y = m_node[kp].nLength;//Moduleのy座標をを求める
 
 	return 1;
 }

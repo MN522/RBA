@@ -1,0 +1,7 @@
+Data File: C:\Users\itolab\OneDrive - é‹Ê‘åŠw\M1Œ¤‹†\RBArchDesignMuxNo\Data\—á‘èDFG.txt
+Binding: Tstart=100.000000, Tend=1.000000, Trate=0.900000, Iterate=10
+Pro Floorplan: Tstart=10.000000, Tend=0.100000, Trate=0.900000, Iterate=100
+Final Floorplan: Tstart=10.000000, Tend=0.100000, Trate=0.900000, Iterate=100
+Clock Cycles = 4
+Clock Pediod = 16
+CPU time = 5 seconds

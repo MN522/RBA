@@ -150,10 +150,10 @@ int CFloorplan::GetScorePro()
 	return nReturnValue;
 }
 
-int CFloorplan::GetScoreFinal()
+int CFloorplan::GetScoreFinal()//MUXを追加したスコアを求める
 {
 	////////////////////////////////
-	Pack();
+	Pack();//Moduleのx、y座標が求まる
 	////////////////////////////////
 
 	int nReturnValue;
@@ -168,11 +168,19 @@ int CFloorplan::GetScoreFinal()
 	nScoreTotalSquare = 0;
 
 	for( crptr=m_listCommunicationRequirement ; crptr ; crptr=crptr->next ){
-		GetCoordinateModuleTerminal(crptr->nIndexModuleSource, 1/*InOut*/, &nXs, &nYs);
-		GetCoordinateModuleTerminal(crptr->nIndexModuleDest, 0/*InOut*/, &nXd, &nYd);
+		GetCoordinateModuleTerminal(crptr->nIndexModuleSource, 1/*InOut*/, &nXs, &nYs);//ソースの出力点座標を求める
+		GetCoordinateModuleTerminal(crptr->nIndexModuleDest, 0/*InOut*/, &nXd, &nYd);//デストの入力点座標を求める
 		if( crptr->nIndexModuleVia >= 0 ){
-			GetCoordinateModuleTerminal(crptr->nIndexModuleVia, 0/*InOut*/, &nXv1, &nYv1);
-			GetCoordinateModuleTerminal(crptr->nIndexModuleVia, 1/*InOut*/, &nXv2, &nYv2);
+			GetCoordinateModuleTerminal(crptr->nIndexModuleVia, 0/*InOut*/, &nXv1, &nYv1);//
+			GetCoordinateModuleTerminal(crptr->nIndexModuleVia, 1/*InOut*/, &nXv2, &nYv2);//ビアの入出力点座標を求める
+			//MUXの遅延を計算
+			/*
+			for(muxcrptr=crptr->mux;muxcrptr;muxcrptr=muxcrptr->next)
+			GetCoordinateModuleTerminal(muxcrptr, 0, &nXv1, &nYv1);
+		      GetCoordinateModuleTerminal(muxcrptr, 1, &nXv2, &nYv2);
+			
+			
+			*/
 			nScore = CalcWireDelay(nXs, nYs, nXv1, nYv1);
 			nScore += CalcWireDelay(nXv2, nYv2, nXd, nYd);
 		}else{

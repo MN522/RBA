@@ -129,6 +129,7 @@ public:
 	void AddCommunicationRequirementRegToReg(int nIndexRegF, int nIndexRegT);
 	void ClearCommunicationRequirementPro(void);
 	void ShowCommunicationRequirement(void);
+	//void makeMuxTree(MuxNode *ptr1,int num);
 	int GetModuleIndexBoundToNode(int n);
 
 	INTERCONNECTION *m_aInterFUConnection;
@@ -172,6 +173,7 @@ public:
 	void GetScorePhase2(void);
 	void GetScorePhase3(void);
 	void GetScorePhase4(void);
+	void GetScorePhase4_1(void);
 	void GetScorePhase5(void);
 	void GetScorePhase6(void);
 	void GetScorePhase7(void);
@@ -230,12 +232,17 @@ public:
 	COMREQUIREMENT *m_listCommunicationRequirement;
 	COMREQUIREMENT *m_listCommunicationRequirementPro;
 	COMREQUIREMENT *m_listCommunicationRequirementFinal;
+	COMREQUIREMENT *m_listCommunicationRequirementMux;
 
 	int *m_aPriority;
 	int m_nClockCycles;
 	int m_nClockPeriod;
 
 	int m_nFinalReg;
+	//é©çÏ
+	#include <vector>
+	bool is1;
+	void makeMuxTree(MuxNode *ptr1, std::vector<int> aIn);
 
 };
 
