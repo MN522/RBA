@@ -85,7 +85,9 @@ void CSimulatedAnnealing::Initialize(void)
 {
 	m_pSolution->Initialize();
 }
-
+void CSimulatedAnnealing::KARI(void) {
+	m_pSolution->LookPalameter();
+}
 #define PROB_FACTOR 1000
 int CSimulatedAnnealing::Execute()
 {

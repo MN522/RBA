@@ -26,7 +26,8 @@ public:
 	void SetWindowHandle( HWND hWnd ){ m_hWnd = hWnd; }
 	void EnableStatistics(void){ m_bStatistics = TRUE; }
 	void SetID(int nID){ m_nID = nID; }
-
+	//é©çÏ
+	void KARI();
 private:
 	CSolution *m_pSolution;
 	double m_Tstart;

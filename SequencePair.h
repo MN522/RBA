@@ -39,6 +39,8 @@ public:
 	int RestoreNeighbor();
 	int GetScore();
 	int Initialize();
+	//é©çÏ
+	int LookPalameter();
 
 	void Clear(void);
 	int GetModuleNum(void){ return m_nModule; }
@@ -94,5 +96,7 @@ public:
 	LPEDGE **mEdgeStack;
 	LPNODE **mNodeStack;
 
+	int AnyGamma();
+	void CheckGamma();
 };
 

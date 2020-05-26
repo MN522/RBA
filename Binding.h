@@ -47,8 +47,8 @@ typedef struct RegGroupContainerRec{
 typedef struct RegGroupRec{
 	int n;
 #ifdef ARRAYINDEXEDLIST
-	int nIndexRegInstanceTop;
-	int nIndexRegGroupNext;
+	int nIndexRegInstanceTop;//このRGに保存されている先頭のレジスタインスタンス
+	int nIndexRegGroupNext;//次のRG。最後のRGならこれは-1
 #else
 	struct RegInstanceRec *listRegInstance;
 	struct RegGroupRec *next;
@@ -59,9 +59,9 @@ typedef struct RegInstanceRec{
 	int n;
 	int *aBoundToReg;
 #ifdef ARRAYINDEXEDLIST
-	int nIndexRegToRegCommTop;
+	int nIndexRegToRegCommTop;//-1のとき前にレジスタは繋がってい？
 	int nIndexRegToFUCommTop;
-	int nIndexRegInstanceNext;
+	int nIndexRegInstanceNext;//同じRGの中で次のレジスタインスタンス
 #else
 	struct RegToRegCommRec *listRegToRegComm;
 	struct RegToFUCommRec *listRegToFUComm;
@@ -148,7 +148,7 @@ public:
 	REGGROUPCONTAINER *m_poolRegGroupContainer;
 	int m_nCountPoolRegGroupContainer;
 	int m_nCountAllocatedRegGroupContainer;
-	REGGROUP *m_poolRegGroup;
+	REGGROUP *m_poolRegGroup;//RGがプールされている
 	int m_nCountPoolRegGroup;
 	int m_nCountAllocatedRegGroup;
 	REGINSTANCE *m_poolRegInstance;

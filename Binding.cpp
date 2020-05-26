@@ -14,7 +14,7 @@
 #define MODULE_SIZE_REG_HEIGHT 2
 
 //#define THRESHOLD_CLOCK_PERIOD 4
-#define THRESHOLD_CLOCK_PERIOD 17
+#define THRESHOLD_CLOCK_PERIOD 30
 CBinding::CBinding()
 {
 	m_nNodeAdd = 0;
@@ -279,7 +279,12 @@ double CBinding::Evaluate(void)
 int CBinding::GetScore()
 {
 	//簡単化のためバインディングを任意に固定
-		//m_aBinding[0] = 0; m_aBinding[1] = 1; m_aBinding[2] = 2; m_aBinding[3] = 0; m_aBinding[4] = 1; m_aBinding[5] = 2; m_aBinding[6] = 0; m_aBinding[7] = 1;
+	//m_aBinding[0] = 0;
+		m_aBinding[1] = 0, m_aBinding[4] = 0; m_aBinding[5] = 0; m_aBinding[9] = 0; m_aBinding[11] = 0; 
+		m_aBinding[2] = 1; m_aBinding[6] = 1; m_aBinding[8] = 1; m_aBinding[10] = 1; m_aBinding[12] = 1;
+		m_aBinding[3] = 2; m_aBinding[7] = 2; m_aBinding[13] = 2;
+		m_aBinding[14] = 0; m_aBinding[15] = 0; 
+		m_aBinding[16] = 1;
 #ifdef DEBUG_VERBOSE_SCORE
 	TRACE( "CBinding::GetScore --------------------\n" );
 #endif
@@ -295,6 +300,7 @@ int CBinding::GetScore()
 #ifdef DEBUG_VERBOSE_SCORE
 	TRACE( "CBinding::GetScorePhase2 ---\n" );
 #endif
+	
 	GetScorePhase2();
 
 	/*///////////////////////////////////////////
@@ -494,7 +500,7 @@ void CBinding::GetScorePhase2(void)
 	//m_SAforFloorplanPro.RegisterSolution( &m_FloorplanPro );
 	//m_SAforFloorplanPro.Initialize( m_fTempStart, m_fTempEnd, m_fRate, m_nIterate, FALSE/*MaximizeScore*/ );
 	m_SAforFloorplanPro.Initialize();//CSimulatedAnnealing型
-
+	//return;//一時。簡単化のため仮フロア実行せず
 	int nResultCode = m_SAforFloorplanPro.Execute();
 	if( nResultCode != 1 ){
 		CString str;
@@ -509,6 +515,7 @@ void CBinding::GetScorePhase2(void)
 		AfxMessageBox( str, MB_ICONSTOP|MB_OK );
 		return;
 	}
+	m_SAforFloorplanPro.KARI();
 }
 
 // (3)仮フロアプランに基づき、演算間に通信クロックサイクルを設定
@@ -1159,6 +1166,9 @@ int CBinding::GetModuleIndexBoundToNode(int n)
 		aTranslateBindingFUIndexToModuleIndex = m_aTranslateBindingFUIndexToModuleIndexMul;
 		break;
 	}
+	if (aTranslateBindingFUIndexToModuleIndex == NULL) {//演算器の数が足りないときのエラー処理
+		TRACE("エラーaTranslateBindingFUIndexToModuleIndexはNULLポインタ。演算器が足りない可能性");
+	}
 	return nIndexModuleBase+aTranslateBindingFUIndexToModuleIndex[m_aBinding[n]];
 }
 
@@ -1794,7 +1804,7 @@ void CBinding::ClearRegistersFinal(void)
 
 }
 
-#define THRESHOLD_CLOCK_PERIOD 17
+#define THRESHOLD_CLOCK_PERIOD 30
 void CBinding::AddCommPipelineRegisters(void)
 {
 #ifdef DEBUG_VERBOSE_FUNCTION
@@ -1901,7 +1911,7 @@ void CBinding::AddCommPipelineRegisters(void)
 		}else{
 			// crptr->nIndexModuleSourceは乗算器, crptr->nIndexModuleDestは乗算器の出力を受け取るレジスタ
 //			TRACE( "Module %d ==> Module %d", crptr->nIndexModuleSource, crptr->nIndexModuleDest );
-			continue;
+			continue;//追加レジスタなしでとぶ
 			// 特にレジスタ追加必要なし
 		}
 #ifdef DEBUG_VERBOSE
@@ -1942,7 +1952,7 @@ void CBinding::AddCommPipelineRegisters(void)
 				rgcptr = GetElementRegGroupContainer();
 				if( k == nPipelineStages-1 ){
 					// 通信先の直前のレジスタグループ
-					if( aRegGroupForInput[nIndexFUdest] >= 0 ){
+					if( aRegGroupForInput[nIndexFUdest] >= 0 ){//通信先の直前にすでにレジスタグループがあるか？
 						rgptr = &(m_poolRegGroup[aRegGroupForInput[nIndexFUdest]]);
 					}else{
 						rgptr = GetElementRegGroup();
@@ -2557,3 +2567,4 @@ void CBinding::AnalyzeInterModuleCommunicationRequirementsFinal(void)
 	///////////////////////////////////
 }
 
+	

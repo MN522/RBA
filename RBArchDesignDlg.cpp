@@ -239,10 +239,10 @@ BOOL CRBArchDesignDlg::OnInitDialog()
 	m_dTstartFloorplanFinal = 10; m_dTendFloorplanFinal = 0.1; m_dRateFloorplanFinal = 0.9; m_nIterateFloorplanFinal = 100;
 	///////////////////
 
-	m_bMultiThread = TRUE;
+	m_bMultiThread = FALSE;//デバックしやすいようにFalseに。一時的
 
 	m_nAdd = 3;
-	m_nMul = 0;
+	m_nMul = 2;
 	m_nSub = 0;
 
 	time( &m_timeStart );

@@ -82,6 +82,8 @@ int CSequencePair::AddUnitType(int nWidth, int nHeight)
 	return m_nUnit++;
 }
 
+
+
 int CSequencePair::AddModule(int nUnitType)
 {
 	int i,m;
@@ -118,8 +120,8 @@ int CSequencePair::AddModule(int nWidth, int nHeight)
 
 int CSequencePair::Initialize()
 {
-	InitGamma();
-
+	//InitGamma();
+	AnyGamma();//簡単化のためガンマ値固定.一時的
 	if( m_node != NULL ){
 		GlobalFree( m_node );
 		GlobalFree( m_elist );
@@ -131,6 +133,35 @@ int CSequencePair::Initialize()
 	mEdgeStack = (LPEDGE **)GlobalAlloc( GPTR, m_nModule*sizeof(LPEDGE *) );
 	mNodeStack = (LPNODE **)GlobalAlloc( GPTR, m_nModule*sizeof(LPNODE *) );
 
+	return 1;
+}
+int CSequencePair::LookPalameter() {
+
+	TRACE("m_GammaPlus=[");
+	for (int i = 0; i < m_nModule; i++) {
+		TRACE("%d,", m_GammaPlus[i]);
+	}
+	TRACE("] ");
+	TRACE("m_GammaMinus=[");
+	for (int i = 0; i < m_nModule; i++) {
+		TRACE("%d,", m_GammaMinus[i]);
+	}
+	TRACE("] ");
+	//set
+	m_GammaPlus[0] = 7, m_GammaPlus[1] = 3, m_GammaPlus[2] = 4, m_GammaPlus[3] = 8, m_GammaPlus[4] = 2,
+		m_GammaPlus[5] = 0, m_GammaPlus[6] = 9, m_GammaPlus[7] = 1, m_GammaPlus[8] = 6, m_GammaPlus[9] = 5;
+	m_GammaMinus[0] = 9, m_GammaMinus[1] = 2, m_GammaMinus[2] = 7, m_GammaMinus[3] = 6, m_GammaMinus[4] = 1,
+		m_GammaMinus[5] = 4, m_GammaMinus[6] = 5, m_GammaMinus[7] = 0, m_GammaMinus[8] = 8, m_GammaMinus[9] = 2;
+	TRACE("m_GammaPlus=[");
+	for (int i = 0; i < m_nModule; i++) {
+		TRACE("%d,", m_GammaPlus[i]);
+	}
+	TRACE("] ");
+	TRACE("m_GammaMinus=[");
+	for (int i = 0; i < m_nModule; i++) {
+		TRACE("%d,", m_GammaMinus[i]);
+	}
+	TRACE("] ");
 	return 1;
 }
 
@@ -217,6 +248,44 @@ int CSequencePair::InitGamma()//Moduleの数だけシークエンスペアを生成
 	return 1;
 }
 
+int CSequencePair::AnyGamma()//Moduleの数だけシークエンスペアを生成.簡単化のためガンマを任意に固定・自作
+{
+	//	TRACE( "CSequencePair::InitGamma: m_nModule=%d\n", m_nModule );
+	if (m_GammaPlus != NULL) {
+		GlobalFree(m_GammaPlus);
+		GlobalFree(m_GammaMinus);
+		GlobalFree(m_GammaMinusOrder);
+		GlobalFree(m_BestGammaPlus);
+		GlobalFree(m_BestGammaMinus);
+		GlobalFree(m_BestModuleRotation);
+	}
+	m_GammaPlus = (int *)GlobalAlloc(GPTR, m_nModule * sizeof(int));
+	m_GammaMinus = (int *)GlobalAlloc(GPTR, m_nModule * sizeof(int));
+	m_GammaMinusOrder = (int *)GlobalAlloc(GPTR, m_nModule * sizeof(int));
+	m_BestGammaPlus = (int *)GlobalAlloc(GPTR, m_nModule * sizeof(int));
+	m_BestGammaMinus = (int *)GlobalAlloc(GPTR, m_nModule * sizeof(int));
+	m_BestModuleRotation = (int *)GlobalAlloc(GPTR, m_nModule * sizeof(int));
+	
+	int i, n, k;
+	for (i = 0; i<5; i++) {
+		m_GammaPlus[i] = i;
+		m_GammaMinus[i] = i;
+	}
+	m_GammaPlus[5] = 9, m_GammaPlus[6] = 8, m_GammaPlus[7] = 7, m_GammaPlus[8] = 6, m_GammaPlus[9] = 5;
+	m_GammaMinus[5] = 9, m_GammaMinus[6] = 8, m_GammaMinus[7] = 7, m_GammaMinus[8] = 6, m_GammaMinus[9] = 5;
+	return 1;
+}
+void CSequencePair::CheckGamma()//Gammaの中身見る関数。自作
+{
+	TRACE("m_GammaPlus=[");
+	for (int i = 0; i < m_nModule; i++) {
+		TRACE("%d,", m_GammaPlus[i]);	
+	}
+	TRACE("m_GammaMinus=[");
+	for (int i = 0; i < m_nModule; i++) {
+		TRACE("%d,", m_GammaMinus[i]);
+	}
+}
 void CSequencePair::ComputeLongestPath()
 {
 	int n;
