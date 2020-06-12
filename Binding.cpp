@@ -515,7 +515,7 @@ void CBinding::GetScorePhase2(void)
 		AfxMessageBox( str, MB_ICONSTOP|MB_OK );
 		return;
 	}
-	m_SAforFloorplanPro.KARI();
+	m_SAforFloorplanPro.KARI();//floorプラン固定
 }
 
 // (3)仮フロアプランに基づき、演算間に通信クロックサイクルを設定
@@ -531,7 +531,8 @@ void CBinding::GetScorePhase3(void)
 void CBinding::GetScorePhase4(void)
 {
 	ListScheduleWithComminicationDelay();
-	AddRegistersFinal();
+	GetVertexForBipartite();
+	//AddRegistersFinal();
 }
 //(4_1)MUXの追加、実行クロックサイクル数の再決定
 void CBinding::GetScorePhase4_1(void)
@@ -1654,7 +1655,7 @@ INTERCONNECTIONTARGET *CBinding::GetElementInterconnectionTarget(void)
 {
 	INTERCONNECTIONTARGET *p;
 	int k;
-	if( m_nCountAllocatedInterconnectionTarget >= m_nCountPoolInterconnectionTarget ){
+	if( m_nCountAllocatedInterconnectionTarget >= m_nCountPoolInterconnectionTarget ){//既に対象の接続があるか。多分
 		p = (INTERCONNECTIONTARGET *)GlobalAlloc( GPTR, (m_nCountPoolInterconnectionTarget+CHUNK_POOL_ALLOCATION)*sizeof(INTERCONNECTIONTARGET) );
 		for( k=0 ; k<m_nCountPoolInterconnectionTarget ; k++ ) p[k] = m_poolInterconnectionTarget[k];
 		m_nCountPoolInterconnectionTarget += CHUNK_POOL_ALLOCATION;
@@ -1675,15 +1676,15 @@ REGGROUPCONTAINER *CBinding::GetElementRegGroupContainer(void)
 {
 	REGGROUPCONTAINER *p;
 	int k;
-	if( m_nCountAllocatedRegGroupContainer >= m_nCountPoolRegGroupContainer ){
-		p = (REGGROUPCONTAINER *)GlobalAlloc( GPTR, (m_nCountPoolRegGroupContainer+CHUNK_POOL_ALLOCATION)*sizeof(REGGROUPCONTAINER) );
-		for( k=0 ; k<m_nCountPoolRegGroupContainer ; k++ ) p[k] = m_poolRegGroupContainer[k];
+	if( m_nCountAllocatedRegGroupContainer >= m_nCountPoolRegGroupContainer ){//新しくつくるRGCが101個目かどうか
+		p = (REGGROUPCONTAINER *)GlobalAlloc( GPTR, (m_nCountPoolRegGroupContainer+CHUNK_POOL_ALLOCATION)*sizeof(REGGROUPCONTAINER) );//サイズ100のRGC配列を作る
+		for( k=0 ; k<m_nCountPoolRegGroupContainer ; k++ ) p[k] = m_poolRegGroupContainer[k];//既にあるサイズ100のRGC配列を新しく作るサイズ200配列にコピー
 		m_nCountPoolRegGroupContainer += CHUNK_POOL_ALLOCATION;
-		for(  ; k<m_nCountPoolRegGroupContainer ; k++ ){
+		for(  ; k<m_nCountPoolRegGroupContainer ; k++ ){//サイズ200配列の101～200目を作る
 			p[k].n = k;
 		}
-		if( m_poolRegGroupContainer ) GlobalFree( m_poolRegGroupContainer );
-		m_poolRegGroupContainer = p;
+		if( m_poolRegGroupContainer ) GlobalFree( m_poolRegGroupContainer );//古いサイズ100配列を削除
+		m_poolRegGroupContainer = p;//サイズ200配列を登録
 	}
 	p = &(m_poolRegGroupContainer[m_nCountAllocatedRegGroupContainer]);
 	p->n = m_nCountAllocatedRegGroupContainer;
@@ -1939,8 +1940,9 @@ void CBinding::AddCommPipelineRegisters(void)
 		rgptr0->nIndexRegInstanceTop = -1;
 		// 通信元演算器から通信先演算器へ向かう通信路に、段数nPipelineStagesに応じてレジスタグループを追加
 		nIndexInterconnectionTarget = m_aInterFUConnection[nIndexFUsrc].nIndexInterconnectionTargetTop;
-		nIndexFUdest = m_poolInterconnectionTarget[nIndexInterconnectionTarget].nIndexTargetFU;
+		//nIndexFUdest = m_poolInterconnectionTarget[nIndexInterconnectionTarget].nIndexTargetFU;//ここでnIndexFUdestを定めると通信先がうまくいかない？
 		for( ; nIndexInterconnectionTarget>=0 ; nIndexInterconnectionTarget=m_poolInterconnectionTarget[nIndexInterconnectionTarget].nIndexInterconnectionTargetNext ){
+			nIndexFUdest = m_poolInterconnectionTarget[nIndexInterconnectionTarget].nIndexTargetFU;//新規追加
 			nPipelineStages = m_poolInterconnectionTarget[nIndexInterconnectionTarget].nPipelineStages;
 			rgcnext = &(m_poolInterconnectionTarget[nIndexInterconnectionTarget].nIndexRegGroupContainerTop);
 			rgcptr = GetElementRegGroupContainer();
@@ -2016,7 +2018,7 @@ void CBinding::ListScheduleWithComminicationDelay(void)
 				nIndexInterconnectionTarget = m_poolInterconnectionTarget[nIndexInterconnectionTarget].nIndexInterconnectionTargetNext;
 			}
 			if( nIndexInterconnectionTarget < 0 ) continue;	// この状況にはならないはず
-			eptr->com = m_poolInterconnectionTarget[nIndexInterconnectionTarget].nPipelineStages-1;
+			eptr->com = m_poolInterconnectionTarget[nIndexInterconnectionTarget].nPipelineStages-1;//R->rRの遅延クロック挿入
 		}
 	}
 
@@ -2215,7 +2217,7 @@ void CBinding::AddRegistersFinal(void)
 	int k;
 	int t,t0;
 	int TL;
-
+	int mInputNumToReg;
 	for( k=0 ; k<N ; k++ ){
 		// 優先順位の高いノードから順に調べる
 		nF = m_aPriority[k];
@@ -2344,7 +2346,7 @@ void CBinding::AddRegistersFinal(void)
 		for( nIndexRegGroup=0 ; nIndexRegGroup<m_nCountAllocatedRegGroup ; nIndexRegGroup++ ){
 			nIndexRegInstance = m_poolRegGroup[nIndexRegGroup].nIndexRegInstanceTop;
 			for( ; nIndexRegInstance >= 0 ; nIndexRegInstance = m_poolRegInstance[nIndexRegInstance].nIndexRegInstanceNext ){
-				TRACE( "  %2s ,", m_poolRegInstance[nIndexRegInstance].aBoundToReg[t]>=0 ? node[m_poolRegInstance[nIndexRegInstance].aBoundToReg[t]].N : "  " );
+				TRACE( "  %2s ,", m_poolRegInstance[nIndexRegInstance].aBoundToReg[t]>=0 ? node[m_poolRegInstance[nIndexRegInstance].aBoundToReg[t]].N : "  " );//node配列のインデックス番号とNは同じ
 			}
 		}
 		TRACE( "\n" );
@@ -2366,6 +2368,192 @@ void CBinding::AddRegistersFinal(void)
 			TRACE( "FU %d, ", m_poolRegToFUComm[nIndexRegToFUComm].nIndexFU );
 		}
 		TRACE( "\n" );
+	}
+#endif
+}
+
+void CBinding::GetVertexForBipartite(void)
+{
+	int N = m_pDFG->N;
+	NODE *node = m_pDFG->m_node;
+	EDGE *eptr;
+	int nLifetimeStart, nLifetimeEnd;
+	int nF, nT;
+	int nIndexModuleF, nIndexModuleT;
+	int nIndexInterconnectionTarget;
+	int nIndexRegGroupContainer;
+	int nIndexRegGroupContainerNext;
+	int nIndexRegGroup;
+	int nIndexRegInstance;
+	int nIndexRegInstancePrev;
+	int nIndexRegToRegComm;
+	int nIndexRegToFUComm;
+	REGINSTANCE *riptr;
+	REGTOREGCOMM *rtrcptr;
+	REGTOFUCOMM *rtfcptr;
+	int *nRiptr;
+	int k;
+	int t, t0;
+	int TL;
+	std::vector<std::vector<int>> vvInflowRegToReg;
+
+	for (k = 0; k < N; k++) {
+		// 優先順位の高いノードから順に調べる
+		nF = m_aPriority[k];
+		nIndexModuleF = GetModuleIndexBoundToNode(nF);
+		nLifetimeStart = node[nF].Time + node[nF].C;//実行開始時間＋実行時間
+		for (eptr = node[nF].olist; eptr; eptr = eptr->olist) {
+			nT = eptr->t->n;//エッジのToノードのインデックス
+			nIndexModuleT = GetModuleIndexBoundToNode(nT);
+			nLifetimeEnd = node[nT].Time; //nLifetimeStart-nLifetimeEndがエッジ(演算結果)のライフタイム
+			if (nLifetimeEnd > m_nClockCycles) {
+				char filename[64];
+				sprintf_s(filename, "error%d.txt", m_nID);
+				FILE *fp;
+				fopen_s(&fp, filename, "w");
+				fprintf(fp, "nLifetimeEnd=%d, m_nClockCycles=%d\n", nLifetimeEnd, m_nClockCycles);
+				for (int n = 0; n < N; n++) {
+					fprintf(fp, "Node %s, Time=%d, C=%d\n", node[n].N, node[n].Time, node[n].C);
+				}
+				fclose(fp);
+				TRACE("error\n");
+				exit(1);
+			}
+#ifdef DEBUG_VERBOSE
+			TRACE("%s(%d) -> %s(%d) Lifetime=[%d,%d] -----------------\n", node[nF].N, nIndexModuleF, node[nT].N, nIndexModuleT, nLifetimeStart, nLifetimeEnd);
+#endif
+			//
+			nIndexInterconnectionTarget = m_aInterFUConnection[nIndexModuleF].nIndexInterconnectionTargetTop;
+			while (nIndexInterconnectionTarget >= 0) {
+				if (m_poolInterconnectionTarget[nIndexInterconnectionTarget].nIndexTargetFU == nIndexModuleT) break;
+				nIndexInterconnectionTarget = m_poolInterconnectionTarget[nIndexInterconnectionTarget].nIndexInterconnectionTargetNext;
+			}
+			if (nIndexInterconnectionTarget < 0) continue;	// この条件になることはありえない
+			t = nLifetimeStart;
+			nIndexRegInstancePrev = -1;
+			nIndexRegGroupContainer = m_poolInterconnectionTarget[nIndexInterconnectionTarget].nIndexRegGroupContainerTop;
+			while (nIndexRegGroupContainer >= 0) {
+				nIndexRegGroupContainerNext = m_poolRegGroupContainer[nIndexRegGroupContainer].nIndexRegGroupContainerNext;
+				if (nIndexRegGroupContainerNext >= 0) {
+					TL = t;//最後のレジスタグループでないならデータライフタイムのスタートを記録
+				}
+				else {
+					// 最後のレジスタグループならば、データライフタイムの最後まで記録
+					TL = nLifetimeEnd;
+				}
+				nIndexRegGroup = m_poolRegGroupContainer[nIndexRegGroupContainer].nIndexRegGroupTop;
+				// レジスタグループnIndexRegGroupに演算ノードnFの結果を時刻tにおいて保持できるものがあるか探す
+				nIndexRegInstance = m_poolRegGroup[nIndexRegGroup].nIndexRegInstanceTop;
+				while (nIndexRegInstance >= 0) {
+					for (t0 = t; t0 <= TL; t0++) {
+						if (!(m_poolRegInstance[nIndexRegInstance].aBoundToReg[t0] == nF || m_poolRegInstance[nIndexRegInstance].aBoundToReg[t0] < 0)) break;
+					}
+					if (t0 > TL) break;	// nFの結果を保持できるレジスタが見つかった
+					nIndexRegInstance = m_poolRegInstance[nIndexRegInstance].nIndexRegInstanceNext;
+				}
+				if (nIndexRegInstance < 0) {
+					// 保持に使えるレジスタが存在しない
+					// 新規にレジスタを取得し、レジスタグループの末尾に追加
+					nRiptr = &(m_poolRegGroup[nIndexRegGroup].nIndexRegInstanceTop);
+					while (*nRiptr >= 0) {
+						nIndexRegInstance = *nRiptr;
+						nRiptr = &(m_poolRegInstance[nIndexRegInstance].nIndexRegInstanceNext);
+					}
+					riptr = GetElementRegInstance();
+					nIndexRegInstance = riptr->n;
+					m_poolRegInstance[nIndexRegInstance].nIndexRegInstanceNext = -1;
+					*nRiptr = nIndexRegInstance;
+				}
+				for (t0 = t; t0 <= TL; t0++)	m_poolRegInstance[nIndexRegInstance].aBoundToReg[t0] = nF;
+#ifdef DEBUG_VERBOSE
+				TRACE(" bound to RG%d, Reg%d [%d,%d]", nIndexRegGroup, nIndexRegInstance, t, TL);
+#endif
+				// 直前のレジスタから通信要求を記録
+				
+				if (nIndexRegInstancePrev >= 0) {
+					nIndexRegToRegComm = m_poolRegInstance[nIndexRegInstancePrev].nIndexRegToRegCommTop;
+					while (nIndexRegToRegComm >= 0) {
+						if (m_poolRegToRegComm[nIndexRegToRegComm].nIndexRegInstance == nIndexRegInstance) break;	// すでに同じ通信要求が記録済み
+						nIndexRegToRegComm = m_poolRegToRegComm[nIndexRegToRegComm].nIndexRegToRegCommNext;
+					}
+					if (nIndexRegToRegComm < 0) {
+						// 新規に通信要求を記録
+						rtrcptr = GetElementRegToRegComm();
+						rtrcptr->nIndexRegInstance = nIndexRegInstance;
+						rtrcptr->nIndexRegToRegCommNext = m_poolRegInstance[nIndexRegInstancePrev].nIndexRegToRegCommTop;
+						while (vvInflowRegToReg.size() <= nIndexRegInstance) {
+							std::vector<int> vInFlowInstance;
+							vvInflowRegToReg.push_back(vInFlowInstance);
+						}
+						vvInflowRegToReg[nIndexRegInstance].push_back(nIndexRegInstancePrev);
+						m_poolRegInstance[nIndexRegInstancePrev].nIndexRegToRegCommTop = rtrcptr->n;//最後に生成されたレジスタがTOPになる
+					}
+				}
+				//
+				nIndexRegInstancePrev = nIndexRegInstance;
+				t = TL + 1;
+
+				nIndexRegGroupContainer = nIndexRegGroupContainerNext;
+			}
+#ifdef DEBUG_VERBOSE
+			TRACE("\n");
+#endif
+			// 通信先演算器の直前のレジスタ(nIndexRegInstancePrev)から、その演算器への通信要求を記録
+			if (nIndexRegInstancePrev >= 0) {
+				nIndexRegToFUComm = m_poolRegInstance[nIndexRegInstancePrev].nIndexRegToFUCommTop;
+				while (nIndexRegToFUComm >= 0) {
+					if (m_poolRegToFUComm[nIndexRegToFUComm].nIndexFU == nIndexModuleT) break;	// すでに同じ通信要求が記録済み
+					nIndexRegToFUComm = m_poolRegToFUComm[nIndexRegToFUComm].nIndexRegToFUCommNext;
+				}
+				if (nIndexRegToFUComm < 0) {
+					// 新規に通信要求を記録
+					rtfcptr = GetElementRegToFUComm();
+					rtfcptr->nIndexFU = nIndexModuleT;
+					rtfcptr->nIndexRegToFUCommNext = m_poolRegInstance[nIndexRegInstancePrev].nIndexRegToFUCommTop;
+					m_poolRegInstance[nIndexRegInstancePrev].nIndexRegToFUCommTop = rtfcptr->n;
+				}
+			}
+		}
+	}
+
+#ifdef DEBUG_VERBOSE
+	// 結果確認
+	TRACE("m_nCountAllocatedRegGroup=%d, m_nCountAllocatedRegInstance=%d\n", m_nCountAllocatedRegGroup, m_nCountAllocatedRegInstance);
+	TRACE(" T :");
+	for (nIndexRegGroup = 0; nIndexRegGroup < m_nCountAllocatedRegGroup; nIndexRegGroup++) {
+		nIndexRegInstance = m_poolRegGroup[nIndexRegGroup].nIndexRegInstanceTop;
+		for (; nIndexRegInstance >= 0; nIndexRegInstance = m_poolRegInstance[nIndexRegInstance].nIndexRegInstanceNext) {
+			TRACE("%2d:%2d ", nIndexRegGroup, nIndexRegInstance);
+		}
+	}
+	TRACE("\n");
+	for (t = 0; t < m_nClockCycles; t++) {
+		TRACE("%3d:", t);
+		for (nIndexRegGroup = 0; nIndexRegGroup < m_nCountAllocatedRegGroup; nIndexRegGroup++) {
+			nIndexRegInstance = m_poolRegGroup[nIndexRegGroup].nIndexRegInstanceTop;
+			for (; nIndexRegInstance >= 0; nIndexRegInstance = m_poolRegInstance[nIndexRegInstance].nIndexRegInstanceNext) {
+				TRACE("  %2s ,", m_poolRegInstance[nIndexRegInstance].aBoundToReg[t] >= 0 ? node[m_poolRegInstance[nIndexRegInstance].aBoundToReg[t]].N : "  ");//node配列のインデックス番号とNは同じ
+			}
+		}
+		TRACE("\n");
+	}
+	for (nIndexRegInstance = 0; nIndexRegInstance < m_nCountAllocatedRegInstance; nIndexRegInstance++) {
+		nIndexRegToRegComm = m_poolRegInstance[nIndexRegInstance].nIndexRegToRegCommTop;
+		if (nIndexRegToRegComm < 0) continue;
+		TRACE("Reg %d ==> ", nIndexRegInstance);
+		for (; nIndexRegToRegComm >= 0; nIndexRegToRegComm = m_poolRegToRegComm[nIndexRegToRegComm].nIndexRegToRegCommNext) {
+			TRACE("Reg %d, ", m_poolRegToRegComm[nIndexRegToRegComm].nIndexRegInstance);
+		}
+		TRACE("\n");
+	}
+	for (nIndexRegInstance = 0; nIndexRegInstance < m_nCountAllocatedRegInstance; nIndexRegInstance++) {
+		nIndexRegToFUComm = m_poolRegInstance[nIndexRegInstance].nIndexRegToFUCommTop;
+		if (nIndexRegToFUComm < 0) continue;
+		TRACE("Reg %d ==> ", nIndexRegInstance);
+		for (; nIndexRegToFUComm >= 0; nIndexRegToFUComm = m_poolRegToFUComm[nIndexRegToFUComm].nIndexRegToFUCommNext) {
+			TRACE("FU %d, ", m_poolRegToFUComm[nIndexRegToFUComm].nIndexFU);
+		}
+		TRACE("\n");
 	}
 #endif
 }

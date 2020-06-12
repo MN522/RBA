@@ -1,10 +1,26 @@
 *Score
-1036
+390
 
 *Module_data
 Add0 16 3
+Add1 16 3
+Add2 16 3
+Mul0 16 13
+Mul1 16 13
 RegA0 16 2
+RegA1 16 2
+RegA2 16 2
+RegM0 16 2
+RegM1 16 2
 
 *Coordinate
-0 0 1
-16 0 3
+29 16 3
+16 2 0
+31 32 2
+0 2 3
+13 5 2
+32 0 1
+16 0 2
+0 18 3
+29 32 1
+0 0 0

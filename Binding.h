@@ -3,6 +3,7 @@
 #include "ListScheduleDFG.h"
 #include "Floorplan.h"
 #include "SimulatedAnnealing.h"
+#include <vector>  
 
 #define ARRAYINDEXEDLIST
 
@@ -20,7 +21,7 @@ typedef struct InterConnectionRec{
 
 typedef struct InterConnectionTargetRec{
 	// 演算器間データ通信接続先
-	int n;
+	int n;		
 	int nIndexTargetFU;
 	int nTypeFU;
 	int nPipelineStages;
@@ -36,7 +37,7 @@ typedef struct InterConnectionTargetRec{
 typedef struct RegGroupContainerRec{
 	int n;
 #ifdef ARRAYINDEXEDLIST
-	int nIndexRegGroupTop;
+	int nIndexRegGroupTop;//このコンテナに保存されているグループの
 	int nIndexRegGroupContainerNext;
 #else
 	struct RegGroupRec *listRegGroup;
@@ -59,7 +60,7 @@ typedef struct RegInstanceRec{
 	int n;
 	int *aBoundToReg;
 #ifdef ARRAYINDEXEDLIST
-	int nIndexRegToRegCommTop;//-1のとき前にレジスタは繋がってい？
+	int nIndexRegToRegCommTop;//-1のとき前にレジスタは繋がっていない・自分のToレジスタ情報を保存したm_poolRegToRegComm配列のインデックス
 	int nIndexRegToFUCommTop;
 	int nIndexRegInstanceNext;//同じRGの中で次のレジスタインスタンス
 #else
@@ -180,6 +181,7 @@ public:
 
 	void ListScheduleWithComminicationDelay(void);
 	void AddRegistersFinal(void);
+	void GetVertexForBipartite(void);//自作
 	void ClearRegistersFinal(void);
 	void ClearCommunicationRequirementFinal(void);
 	void AnalyzeInterModuleCommunicationRequirementsFinal(void);
@@ -243,6 +245,5 @@ public:
 	#include <vector>
 	bool is1;
 	void makeMuxTree(MuxNode *ptr1, std::vector<int> aIn);
-
 };
 

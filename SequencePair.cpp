@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "SequencePair.h"
+#include <array>
 
 CSequencePair::CSequencePair(void)
 {
@@ -150,7 +151,7 @@ int CSequencePair::LookPalameter() {
 	//set
 	m_GammaPlus[0] = 7, m_GammaPlus[1] = 3, m_GammaPlus[2] = 4, m_GammaPlus[3] = 8, m_GammaPlus[4] = 2,
 		m_GammaPlus[5] = 0, m_GammaPlus[6] = 9, m_GammaPlus[7] = 1, m_GammaPlus[8] = 6, m_GammaPlus[9] = 5;
-	m_GammaMinus[0] = 9, m_GammaMinus[1] = 2, m_GammaMinus[2] = 7, m_GammaMinus[3] = 6, m_GammaMinus[4] = 1,
+	m_GammaMinus[0] = 9, m_GammaMinus[1] = 3, m_GammaMinus[2] = 7, m_GammaMinus[3] = 6, m_GammaMinus[4] = 1,
 		m_GammaMinus[5] = 4, m_GammaMinus[6] = 5, m_GammaMinus[7] = 0, m_GammaMinus[8] = 8, m_GammaMinus[9] = 2;
 	TRACE("m_GammaPlus=[");
 	for (int i = 0; i < m_nModule; i++) {
@@ -162,6 +163,13 @@ int CSequencePair::LookPalameter() {
 		TRACE("%d,", m_GammaMinus[i]);
 	}
 	TRACE("] ");
+
+	
+	std::array<int, 10> arr{3, 0, 2, 3, 2, 1, 2, 3, 1, 0};//‰ñ“]ŠpŒÅ’è
+	for (int i = 0; i < arr.size(); i++) {
+		m_Module[i].nOrientation = arr[i];
+	}
+	Pack();//ƒKƒ“ƒ}‚ðƒ‚ƒWƒ…[ƒ‹‚Ö“o˜^
 	return 1;
 }
 
@@ -419,7 +427,7 @@ int CSequencePair::Pack()
 	//TRACE( "nCount=%d\n", nCount );
 	// Å’·Œo˜H‚ð‹‚ß‚é
 	ComputeLongestPath();
-	for( kp=0 ; kp<m_nModule ; kp++ ) m_Module[kp].y = m_node[kp].nLength;//Module‚ÌyÀ•W‚ð‚ð‹‚ß‚é
+	for( kp=0 ; kp<m_nModule ; kp++ ) m_Module[kp].y = m_node[kp].nLength;//ƒKƒ“ƒ}‚©‚çModule‚ÌyÀ•W‚ð‚ð‹‚ß‚é
 
 	return 1;
 }
